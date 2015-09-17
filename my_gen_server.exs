@@ -2,9 +2,17 @@ defmodule MyGenServer do
   defmacro __using__(_) do
     quote do
 
-      def start_server(initial_state) do
-        message_loop(initial_state)
+      def start_server(args) do
+        {:ok, state} = apply(__MODULE__, :init, [args])
+        message_loop(state)
       end
+
+      # default implementation, can be overridden to return {:ok, state}
+      def init(state) do
+        {:ok, state}
+      end
+
+      defoverridable [init: 1]
 
       defp message_loop(state) do
         receive do
@@ -31,9 +39,9 @@ defmodule MyGenServer do
     end
   end
 
-  def start_link(module, initial_state) do
-    IO.puts "starting link in module: #{inspect module}; state: #{inspect initial_state}"
-    pid = spawn(module, :start_server, [initial_state])
+  def start_link(module, args) do
+    IO.puts "starting link in module: #{inspect module}; args: #{inspect args}"
+    pid = spawn(module, :start_server, [args])
     {:ok, pid}
   end
 
@@ -58,7 +66,7 @@ defmodule Counter do
   use MyGenServer
 
   def start_link do
-    MyGenServer.start_link(__MODULE__, 0)
+    MyGenServer.start_link(__MODULE__, [])
   end
 
   def increment(pid) do
@@ -74,6 +82,10 @@ defmodule Counter do
   end
 
   ###
+
+  def init(_args) do
+    {:ok, 0}
+  end
 
   def handle_call(:increment, _from, count) do
     new = count + 1
