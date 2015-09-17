@@ -41,7 +41,7 @@ defmodule MyGenServer do
 
   def start_link(module, args) do
     IO.puts "starting link in module: #{inspect module}; args: #{inspect args}"
-    pid = spawn(module, :start_server, [args])
+    pid = spawn_link(module, :start_server, [args])
     {:ok, pid}
   end
 
